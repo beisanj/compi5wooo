@@ -41,8 +41,14 @@ ret void
 define i32 @main() {
 %t4= add i32 50,0
 %t5= alloca i32, i32 %t4
-%t6 = add i32 0, 3
-%t7 = add i32 0, 4
-= icmp ulti32 %t6, %t7
+br label label_3
+label_2:
+br label label_4
+label_3:
+br label label_7
+label_5:
+br label label_7
+label_4:
+br label label_6
 ret i32 0
 }

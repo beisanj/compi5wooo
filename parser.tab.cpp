@@ -1212,13 +1212,13 @@ yyreduce:
 
   case 6: /* Statement: Type ID SC  */
 #line 46 "parser.ypp"
-                                                                    {checkIfCanDefine(yyvsp[-1]->name);   table->SubTables.back()->addSymbol(yyvsp[-1]->name,yyvsp[-2]->name,1);}
+                                                                    {checkIfCanDefine(yyvsp[-1]->name); table->SubTables.back()->addSymbol(yyvsp[-1]->name,yyvsp[-2]->name,1);}
 #line 1217 "parser.tab.cpp"
     break;
 
   case 7: /* Statement: Type ID ASSIGN Exp SC  */
 #line 47 "parser.ypp"
-                                   {  checkIfCanDefine(yyvsp[-3]->name);  table->SubTables.back()->addSymbol(yyvsp[-3]->name,yyvsp[-4]->name,1);  Node* node= checkIfLegalCastingWithBool(yyvsp[-3],yyvsp[-1]);}
+                                   { checkIfCanDefine(yyvsp[-3]->name);  table->SubTables.back()->addSymbol(yyvsp[-3]->name,yyvsp[-4]->name,1);  Node* node= checkIfLegalCastingWithBool(yyvsp[-3],yyvsp[-1]);}
 #line 1223 "parser.tab.cpp"
     break;
 
@@ -1356,13 +1356,13 @@ yyreduce:
 
   case 30: /* Exp: TRUE  */
 #line 74 "parser.ypp"
-                                                                    {yyval = new Bool(yyvsp[0]->name); yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel(); }
+                                                                    {yyval = new Bool(yyvsp[0]->name); yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel();  cb.emit("br label "+yyval->t_label);}
 #line 1361 "parser.tab.cpp"
     break;
 
   case 31: /* Exp: FALSE  */
 #line 75 "parser.ypp"
-                                                                    {yyval = new Bool(yyvsp[0]->name);yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel();}
+                                                                    {yyval = new Bool(yyvsp[0]->name);yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel(); cb.emit("br label "+yyval->f_label);}
 #line 1367 "parser.tab.cpp"
     break;
 
@@ -1374,13 +1374,13 @@ yyreduce:
 
   case 33: /* $@3: %empty  */
 #line 77 "parser.ypp"
-               {cb.emit(yyvsp[-1]->t_label+":");}
+               {cb.emit(yyvsp[-1]->t_label+":"); }
 #line 1379 "parser.tab.cpp"
     break;
 
   case 34: /* Exp: Exp AND $@3 Exp  */
 #line 77 "parser.ypp"
-                                                                                                {checkIfAndOperandsAreBool(yyvsp[-3],yyvsp[0]); string realVal= calculateOp1AndOp2(yyvsp[-3],yyvsp[0]); yyval=new Bool(realVal); yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); cb.emit(yyvsp[-3]->f_label+":"); cb.emit("br label "+yyval->f_label); cb.emit(yyvsp[0]->f_label+":"); cb.emit("br label "+yyval->f_label); cb.emit(yyvsp[0]->t_label+":"); cb.emit("br label "+yyval->t_label); }
+                                                                                                 {checkIfAndOperandsAreBool(yyvsp[-3],yyvsp[0]); string realVal= calculateOp1AndOp2(yyvsp[-3],yyvsp[0]); yyval=new Bool(realVal); yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); cb.emit(yyvsp[-3]->f_label+":"); cb.emit("br label "+yyval->f_label); cb.emit(yyvsp[0]->f_label+":"); cb.emit("br label "+yyval->f_label); cb.emit(yyvsp[0]->t_label+":"); cb.emit("br label "+yyval->t_label); }
 #line 1385 "parser.tab.cpp"
     break;
 

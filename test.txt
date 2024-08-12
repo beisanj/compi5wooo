@@ -1,1 +1,1 @@
-bool x= 3 < 4;
+bool x= false and true;
