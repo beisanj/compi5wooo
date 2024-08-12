@@ -1,0 +1,3 @@
+C:/Users/bisan/CLionProjects/compi5woo/cmake-build-debug/CMakeFiles/compi5woo.dir
+C:/Users/bisan/CLionProjects/compi5woo/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/bisan/CLionProjects/compi5woo/cmake-build-debug/CMakeFiles/rebuild_cache.dir
