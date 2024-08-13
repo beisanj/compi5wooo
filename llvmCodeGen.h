@@ -7,8 +7,10 @@
 
 #include <string>
 #include "types.h"
+#include <vector>
 class llvmCodeGen {
-
+public:
+    std::vector<WhileLabels*> whiles;
 };
 
 void emitNum(Node* n);
@@ -20,4 +22,9 @@ void emitLocalVar(Node* var, int offset);
 void emitStoreDefault(Node* var, int offset);
 void  emitStore(Node* n,int offset);
 void emitPhiVal(Node* exp);
+void emitEndOfWhile();
+void editLabelsOfWhile(Node* exp);
+void emitPrepForWhile();
+void emitFunctionCall(Node *res,Node *func, Node* args);
+void emitString(Node* res);
 #endif //COMPI5WOO_LLVMCODEGEN_H

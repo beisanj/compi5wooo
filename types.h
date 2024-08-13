@@ -12,6 +12,12 @@ extern int yylineno;
 extern bool isBreakLegal;
 #define YYSTYPE Node*
 
+class WhileLabels{
+public:
+    string t_label;
+    string f_label;
+    WhileLabels(string t, string f):t_label(t),f_label(f){};
+};
 
 class Node {
 public:

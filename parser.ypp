@@ -8,6 +8,8 @@
     #include <iostream>
     extern int yylineno;
     extern char* yytext;
+    extern llvmCodeGen* cg;
+    extern std::vector<WhileLabels*> whiles;
     int yylex();
     CodeBuffer &cb= CodeBuffer::instance();
      symbolTable* table;
@@ -47,15 +49,15 @@ Statement: LBRACE  OPENSUBTABLE Statements RBRACE CLOSESUBTABLE                 
            | Type ID ASSIGN Exp SC { checkIfCanDefine($2->name); table->SubTables.back()->addSymbol($2->name,$1->name,1);Node* node= checkIfLegalCastingWithBool($2,$4); int offset=table->getOffset($2->name); if($4->name=="BOOL"){emitPhiVal($4);} emitStore($4,offset);}
            | ID ASSIGN Exp SC                                       {checkIfDefinedID($1); Node* node=checkIfLegalCastingWithBool($1,$3); int offset=table->getOffset($1->name); if($3->name=="BOOL"){emitPhiVal($3);} emitStore($3,offset); }
            | Call SC                                                {$$ = $1;}
-           | RETURN SC                                              {}
+           | RETURN SC                                              {cb.emit("ret i32 0");}
            | IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement M2 CLOSESUBTABLE ELSE OPENSUBTABLE { cb.emit($3->f_label+":");} Statement CLOSESUBTABLE { $$=new Node("");  $$->n_label= $7->n_label; cb.emit("br label "+$$->n_label); cb.emit($$->n_label+":");}
            | IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement M2 CLOSESUBTABLE {$$=new Node(""); $$->n_label=$7->n_label; cb.emit($3->f_label+":"); cb.emit("br label"+$$->n_label); cb.emit($$->n_label+":"); }
-           | WHILE LPAREN Exp {checkIfBool($3);} RPAREN OPENSUBTABLE {isLoop=true;} Statement CLOSESUBTABLE  {isLoop=false;}
-           | BREAK SC                                               {if(!isLoop) {errorUnexpectedBreak(yylineno);exit(0);}}
-           | CONTINUE SC                                            {if(!isLoop) { errorUnexpectedContinue(yylineno);exit(0);}}
+           | WHILE {emitPrepForWhile();} LPAREN Exp {checkIfBool($4); editLabelsOfWhile($4);} RPAREN OPENSUBTABLE {isLoop=true;} Statement CLOSESUBTABLE  {isLoop=false; emitEndOfWhile();}
+           | BREAK SC                                               {if(!isLoop) {errorUnexpectedBreak(yylineno);exit(0);} cb.emit("br label %" + cg->whiles.back()->f_label);}
+           | CONTINUE SC                                            {if(!isLoop) { errorUnexpectedContinue(yylineno);exit(0);} cb.emit("br label %" + cg->whiles.back()->t_label);}
            ;
 
-Call: ID LPAREN Exp RPAREN                                         {$$=table->checkIfLegalFunction($1->name,$3); }
+Call: ID LPAREN Exp RPAREN                                         {$$=table->checkIfLegalFunction($1->name,$3); emitFunctionCall($$,$1,$3); }
 ;
 
 Type: INT                                                           {$$= new Num($1->name); }
@@ -70,7 +72,7 @@ Exp: LPAREN Exp RPAREN                                              {$$=$2;}
      | Call                                                         { $$=new Node($1); }
      | NUM                                                          {$$ = new Num($1->name); emitNum($$);  $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel();}
      | NUM B                                                        {checkIfLegalByte($1->name); $$ = new NumB($1->name); emitNum($$);  $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel();}
-     | STRING                                                       {$$ = new STRINGClass($1->name);}
+     | STRING                                                       {$$ = new STRINGClass($1->name); emitString($$);}
      | TRUE                                                         {$$ = new Bool($1->name); $$->t_label=cb.freshLabel();$$->f_label=cb.freshLabel();  cb.emit("br label "+$$->t_label);}
      | FALSE                                                        {$$ = new Bool($1->name);$$->t_label=cb.freshLabel();$$->f_label=cb.freshLabel(); cb.emit("br label "+$$->f_label);}
      | NOT Exp                                                      { checkIfBool($2); string realVal= ($2->value=="false")? "true":"false"; $$=new Bool(realVal); $$->t_label=$2->f_label; $$->f_label=$2->t_label; }
@@ -100,8 +102,8 @@ int main(){
      int n=yyparse();
         table->removeSubTable();
         closeMain();
-        cb.printCodeBuffer();
         cb.printGlobalBuffer();
+        cb.printCodeBuffer();
         return n;
 }
 

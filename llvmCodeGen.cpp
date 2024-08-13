@@ -9,6 +9,8 @@
 #include <sstream>
 
 using namespace std;
+llvmCodeGen * cg= new llvmCodeGen;
+
 
 void emitNum(Node* n){
     CodeBuffer &cb=CodeBuffer::instance();
@@ -151,4 +153,48 @@ void emitPhiVal(Node* exp){
     cb.emit("br label "+phi_label);
     cb.emit(phi_label+":");
     cb.emit(exp->nodereg+" = phi i32 [i32 1, "+exp->t_label+"], [i32 0, "+exp->f_label+"]");
+}
+
+void emitPrepForWhile(){
+    CodeBuffer &cb=CodeBuffer::instance();
+    string whileLabel=cb.freshLabel();
+    WhileLabels* wl= new WhileLabels(whileLabel,"");
+    cg->whiles.push_back(wl);
+    cb.emit("br label "+whileLabel);
+    cb.emit(whileLabel+":");
+
+}
+
+void emitEndOfWhile(){
+    CodeBuffer &cb=CodeBuffer::instance();
+    cb.emit("br label %" + cg->whiles.back()->t_label);
+    cb.emit(cg->whiles.back()->f_label + ":");
+    cg->whiles.pop_back();
+}
+
+void editLabelsOfWhile(Node* exp){
+    CodeBuffer &cb=CodeBuffer::instance();
+    cg->whiles.back()->f_label = exp->f_label;
+    cb.emit(exp->t_label + ":");
+}
+
+void emitFunctionCall(Node *res,Node *func,Node* args ){
+    CodeBuffer &cb=CodeBuffer::instance();
+    res->nodereg = cb.freshVar();
+    if(func->name == "print"){
+        cb.emit(res->nodereg + " = call void @" + func->name + "(i8* " + args->nodereg + ")");
+    } else if (func->name == "printi") {
+        cb.emit("call void @" + func->value + "(i32 " + args->nodereg + ")");
+    } else {
+        cb.emit("call i32 @" + func->value + "(i32 " + args->nodereg + ")");
+    }
+}
+void emitString(Node* res){
+    CodeBuffer &cb=CodeBuffer::instance();
+    res->nodereg=cb.freshVar();
+    res->value.erase(0,1);
+    res->value.erase(res->value.size()-1,1);
+    string strNameInLLVM=cb.freshLabel();
+    cb.emitGlobal("@." + strNameInLLVM+ " = constant [" + std::to_string(res->value.size()+1)+ " x i8] c\"" + res->value + "\\00\"");
+    cb.emit(res->nodereg + " = getelementptr [" + std::to_string(res->value.size()+1) + " x i8], [" + std::to_string(res->value.size()+1) + " x i8]* @." + strNameInLLVM + ", i32 0, i32 0");
 }
