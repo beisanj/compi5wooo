@@ -30,17 +30,17 @@ public:
         for(auto& s : symbols)
             output::printID(s->name ,s->offset, s->type);
     }
-    bool checkIfAlreadyExists(string name){
+    int checkIfAlreadyExists(string name){
 
         for(auto& s : symbols){
 
             if(s->name == name){
 
-                return true;
+                return s->offset;
             }
 
         }
-        return false;
+        return -1;
     }
     symbol* retSymbol(string name){
         for(auto& s : symbols){
@@ -50,15 +50,15 @@ public:
         }
         return nullptr;
     }
-    bool addSymbol(string name,string type,int val){
-        if(checkIfAlreadyExists(name)){
+    int addSymbol(string name,string type,int val){
+        if(checkIfAlreadyExists(name) == -1){
             return false;
         }
         symbol* new_symbol = new symbol(name,type,curr_offset,val);
         symbols.push_back(new_symbol);
         curr_offset++;
       //  cout<< "reached addSymbol"<<endl;
-        return true;
+        return curr_offset-1;
     }
 };
 
@@ -85,7 +85,7 @@ public:
 
         for (auto& s : SubTables){
 
-            if(s->checkIfAlreadyExists(name)){
+            if(s->checkIfAlreadyExists(name) != -1){
 
                 return true;
             }
@@ -94,6 +94,16 @@ public:
 
         return false;
 
+    }
+    int getOffset(string name){
+        for (auto& s : SubTables){
+            int offset=s->checkIfAlreadyExists(name);
+            if(offset!=-1){
+                return offset;
+
+            }
+        }
+        return -1;
     }
     symbol* getSymbol(string name){
         for (auto& s : SubTables){

@@ -16,4 +16,7 @@ void closeMain();
 void emitBinop(Node* op1, Node* op2, Node* operation, Node* res);
 void checkForOverflow(Node* res);
 void emitRelop(Node* op1, Node* op2, Node* operation, Node* res);
+void emitLocalVar(Node* var, int offset);
+void emitStoreDefault(Node* var, int offset);
+void  emitStore(Node* n,int offset);
 #endif //COMPI5WOO_LLVMCODEGEN_H

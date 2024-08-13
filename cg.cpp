@@ -11,6 +11,7 @@ CodeBuffer::CodeBuffer() : buffer(), globalDefs() {
 
 
 void emitInitial(){
+   /// cout <<"line 14 emitInitial";
     CodeBuffer& cb=CodeBuffer::instance();
     cb.emit("declare void @exit(i32)");
     cb.emit("declare i32 @printf(i8*, ...)");
@@ -52,8 +53,8 @@ void emitInitial(){
     cb.emit("define i32 @main() {");
     string arrSize=cb.freshVar();
     cb.emit(arrSize+"= add i32 50,0");
-    string array= cb.freshVar();
-    cb.emit(array+"= alloca i32, i32 "+arrSize);
+   // string array= cb.freshVar();
+    cb.emit("%array = alloca i32, i32 "+arrSize);
 }
 
 

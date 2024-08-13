@@ -172,7 +172,7 @@ Node* checkIfLegalCastingWithBool(Node* castTo,Node* castFrom/*,Node*& finalExp*
     }
     else{ /// HUGGEEEEE MISTAKE!!1
         //cout<<"cast from: "<<castFromType<<endl;
-        // cout<<"cast to: "<<castToType<<endl;
+       //  cout<<"175 "<<endl;
         errorMismatch(yylineno);
         exit(0);
     }

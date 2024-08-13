@@ -43,9 +43,9 @@ Statements: Statement                                               {}
             ;
 
 Statement: LBRACE  OPENSUBTABLE Statements RBRACE CLOSESUBTABLE                              {}
-           | Type ID SC                                             {checkIfCanDefine($2->name); table->SubTables.back()->addSymbol($2->name,$1->name,1);}
-           | Type ID ASSIGN Exp SC { checkIfCanDefine($2->name);  table->SubTables.back()->addSymbol($2->name,$1->name,1);  Node* node= checkIfLegalCastingWithBool($2,$4);}
-           | ID ASSIGN Exp SC                                       {checkIfDefinedID($1); Node* node=checkIfLegalCastingWithBool($1,$3); }
+           | Type ID SC                                             {checkIfCanDefine($2->name); int offset =table->SubTables.back()->addSymbol($2->name,$1->name,1); emitStoreDefault($$,offset);}
+           | Type ID ASSIGN Exp SC { checkIfCanDefine($2->name);int offset=table->SubTables.back()->addSymbol($2->name,$1->name,1);  Node* node= checkIfLegalCastingWithBool($2,$4); emitStore($4,offset);}
+           | ID ASSIGN Exp SC                                       {checkIfDefinedID($1); Node* node=checkIfLegalCastingWithBool($1,$3); int offset=getOffset($1->name); emitStore($3,offset); }
            | Call SC                                                {$$ = $1;}
            | RETURN SC                                              {}
            | IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement CLOSESUBTABLE ELSE OPENSUBTABLE Statement CLOSESUBTABLE {}
@@ -66,18 +66,18 @@ Type: INT                                                           {$$= new Num
 Exp: LPAREN Exp RPAREN                                              {$$=$2;}
      | Exp ADD_SUB Exp                                              {checkIfOpIsIntOrByte($1);checkIfOpIsIntOrByte($3);createRes($1,$3,$$); emitBinop($1,$3,$2,$$); }
      | Exp MULT_DIV Exp                                             {checkIfOpIsIntOrByte($1);checkIfOpIsIntOrByte($3);createRes($1,$3,$$); emitBinop($1,$3,$2,$$); }
-     | ID                                                           { checkIfDefinedID($1); $$= new IDClass($1);}
+     | ID                                                           {int offset = checkIfDefinedID($1); $$= new IDClass($1); emitLocalVar($$,offset); }
      | Call                                                         { $$=new Node($1); }
-     | NUM                                                          {$$ = new Num($1->name); emitNum($$);}
-     | NUM B                                                        {checkIfLegalByte($1->name); $$ = new NumB($1->name); emitNum($$);}
+     | NUM                                                          {$$ = new Num($1->name); emitNum($$);  $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel();}
+     | NUM B                                                        {checkIfLegalByte($1->name); $$ = new NumB($1->name); emitNum($$);  $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel();}
      | STRING                                                       {$$ = new STRINGClass($1->name);}
      | TRUE                                                         {$$ = new Bool($1->name); $$->t_label=cb.freshLabel();$$->f_label=cb.freshLabel();  cb.emit("br label "+$$->t_label);}
      | FALSE                                                        {$$ = new Bool($1->name);$$->t_label=cb.freshLabel();$$->f_label=cb.freshLabel(); cb.emit("br label "+$$->f_label);}
      | NOT Exp                                                      { checkIfBool($2); string realVal= ($2->value=="false")? "true":"false"; $$=new Bool(realVal); $$->t_label=$2->f_label; $$->f_label=$2->t_label; }
      | Exp AND {cb.emit($1->t_label+":"); } Exp                                                  {checkIfAndOperandsAreBool($1,$4); string realVal= calculateOp1AndOp2($1,$4); $$=new Bool(realVal); $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel(); cb.emit($1->f_label+":"); cb.emit("br label "+$$->f_label); cb.emit($4->f_label+":"); cb.emit("br label "+$$->f_label); cb.emit($4->t_label+":"); cb.emit("br label "+$$->t_label); }
      | Exp OR {cb.emit($1->f_label+":");} Exp                                                   {checkIfAndOperandsAreBool($1,$4); string realVal= calculateOp1OrOp2($1,$4); $$=new Bool(realVal); $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel(); cb.emit($1->t_label+":"); cb.emit("br label "+$$->t_label); cb.emit($4->f_label+":"); cb.emit("br label "+$$->f_label); cb.emit($4->t_label+":"); cb.emit("br label "+$$->t_label);}
-     | Exp RELOP_GREATER Exp                                        {checkIfOpIsIntOrByte($1); checkIfOpIsIntOrByte($3);   $$=new Bool("false");  $$->t_label=$2->f_label; $$->f_label=$2->t_label; emitRelop($1,$3,$2,$$); }
-     | Exp RELOP_EQUAL Exp                                          {checkIfOpIsIntOrByte($1); checkIfOpIsIntOrByte($3);  $$=new Bool("false"); $$->t_label=$2->f_label; $$->f_label=$2->t_label;  /*calculateResOfComparison($1,$2,$3);*/emitRelop($1,$3,$2,$$);}
+     | Exp RELOP_GREATER Exp                                        {checkIfOpIsIntOrByte($1); checkIfOpIsIntOrByte($3);   $$=new Bool("false");  $$->t_label=$3->t_label; $$->f_label=$3->f_label; $$->nodereg=cb.freshVar(); emitRelop($1,$3,$2,$$); }
+     | Exp RELOP_EQUAL Exp                                          {checkIfOpIsIntOrByte($1); checkIfOpIsIntOrByte($3);  $$=new Bool("false"); $$->t_label=$3->t_label; $$->f_label=$3->f_label; $$->nodereg=cb.freshVar(); emitRelop($1,$3,$2,$$);}
      | LPAREN Type RPAREN Exp                                       {checkIfOpIsIntOrByte($2); checkIfOpIsIntOrByte($4); $$=checkIfLegalCasting($2,$4); }
      ;
 

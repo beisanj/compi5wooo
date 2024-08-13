@@ -20,10 +20,11 @@ public:
     string f_label;
     string value; // the type
     string name; // the var's name
+    string n_label;
     virtual ~Node()=default;
-    Node(string val, string nm):nodereg(),t_label(),f_label(),value(val),name(nm){}
-    Node(string nm): nodereg(),t_label(),f_label(),name(nm){}
-    Node(Node *n):nodereg(n->nodereg),t_label(n->t_label),f_label(n->f_label),value(n->value),name(n->name){}
+    Node(string val, string nm):nodereg(),t_label(),f_label(),value(val),name(nm),n_label(){}
+    Node(string nm): nodereg(),t_label(),f_label(),name(nm),n_label(){}
+    Node(Node *n):nodereg(n->nodereg),t_label(n->t_label),f_label(n->f_label),value(n->value),name(n->name),n_label(){}
 
 };
 class Type : public Node {
