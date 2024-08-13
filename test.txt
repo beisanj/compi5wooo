@@ -1,2 +1,2 @@
-
-print(3+3);
+bool x;
+x= false and true;

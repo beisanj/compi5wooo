@@ -43,13 +43,13 @@ Statements: Statement                                               {}
             ;
 
 Statement: LBRACE  OPENSUBTABLE Statements RBRACE CLOSESUBTABLE                              {}
-           | Type ID SC                                             {checkIfCanDefine($2->name); int offset =table->SubTables.back()->addSymbol($2->name,$1->name,1); emitStoreDefault($$,offset);}
-           | Type ID ASSIGN Exp SC { checkIfCanDefine($2->name);int offset=table->SubTables.back()->addSymbol($2->name,$1->name,1);  Node* node= checkIfLegalCastingWithBool($2,$4); emitStore($4,offset);}
-           | ID ASSIGN Exp SC                                       {checkIfDefinedID($1); Node* node=checkIfLegalCastingWithBool($1,$3); int offset=getOffset($1->name); emitStore($3,offset); }
+           | Type ID SC                                             {checkIfCanDefine($2->name); table->SubTables.back()->addSymbol($2->name,$1->name,1); int offset=table->getOffset($2->name); emitStoreDefault($$,offset);}
+           | Type ID ASSIGN Exp SC { checkIfCanDefine($2->name); table->SubTables.back()->addSymbol($2->name,$1->name,1);Node* node= checkIfLegalCastingWithBool($2,$4); int offset=table->getOffset($2->name); if($4->name=="BOOL"){emitPhiVal($4);} emitStore($4,offset);}
+           | ID ASSIGN Exp SC                                       {checkIfDefinedID($1); Node* node=checkIfLegalCastingWithBool($1,$3); int offset=table->getOffset($1->name); if($3->name=="BOOL"){emitPhiVal($3);} emitStore($3,offset); }
            | Call SC                                                {$$ = $1;}
            | RETURN SC                                              {}
-           | IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement CLOSESUBTABLE ELSE OPENSUBTABLE Statement CLOSESUBTABLE {}
-           | IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE  Statement CLOSESUBTABLE {}
+           | IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement M2 CLOSESUBTABLE ELSE OPENSUBTABLE {cb.emit("else");$$->n_label= $7->n_label; cb.emit($3->f_label+":");} Statement {cb.emit("br label "+$$->n_label);} CLOSESUBTABLE { cb.emit($$->n_label+":");}
+           | IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement M2 CLOSESUBTABLE { $$->n_label=$7->n_label; cb.emit($3->f_label+":"); cb.emit("br label"+$$->n_label); cb.emit($$->n_label+":"); }
            | WHILE LPAREN Exp {checkIfBool($3);} RPAREN OPENSUBTABLE {isLoop=true;} Statement CLOSESUBTABLE  {isLoop=false;}
            | BREAK SC                                               {if(!isLoop) {errorUnexpectedBreak(yylineno);exit(0);}}
            | CONTINUE SC                                            {if(!isLoop) { errorUnexpectedContinue(yylineno);exit(0);}}
@@ -66,7 +66,7 @@ Type: INT                                                           {$$= new Num
 Exp: LPAREN Exp RPAREN                                              {$$=$2;}
      | Exp ADD_SUB Exp                                              {checkIfOpIsIntOrByte($1);checkIfOpIsIntOrByte($3);createRes($1,$3,$$); emitBinop($1,$3,$2,$$); }
      | Exp MULT_DIV Exp                                             {checkIfOpIsIntOrByte($1);checkIfOpIsIntOrByte($3);createRes($1,$3,$$); emitBinop($1,$3,$2,$$); }
-     | ID                                                           {int offset = checkIfDefinedID($1); $$= new IDClass($1); emitLocalVar($$,offset); }
+     | ID                                                           {checkIfDefinedID($1); $$= new IDClass($1); table->getOffset($1->name); int offset=table->getOffset($1->name);  emitLocalVar($$,offset); }
      | Call                                                         { $$=new Node($1); }
      | NUM                                                          {$$ = new Num($1->name); emitNum($$);  $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel();}
      | NUM B                                                        {checkIfLegalByte($1->name); $$ = new NumB($1->name); emitNum($$);  $$->t_label=cb.freshLabel(); $$->f_label=cb.freshLabel();}
@@ -85,8 +85,11 @@ Exp: LPAREN Exp RPAREN                                              {$$=$2;}
      ;
      CLOSESUBTABLE : {table->removeSubTable();}
      ;
-     CHECKIFBOOL: Exp {checkIfBool($1); $$=new Bool("false");}
+     CHECKIFBOOL: Exp {checkIfBool($1); $$=new Bool("false"); $$->t_label= $1->t_label; $$->f_label=$1->f_label;cb.emit($$->t_label+":"); }
      ;
+     M2 : {$$->n_label=cb.freshLabel(); cb.emit("br label "+$$->n_label);}
+     ;
+
 %%
 
 int main(){

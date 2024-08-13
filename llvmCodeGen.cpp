@@ -108,12 +108,12 @@ void emitLocalVar(Node* var, int offset){
     cb.emit(var->nodereg+ " = load i32, i32* " + ptr);
     if(var->name == "BYTE") {
         string fixedReg =cb.freshVar();
-        cb.emit(fixedReg + " = trunc i32 " + ptr+ " to i8");
+        cb.emit(fixedReg + " = trunc i32 " + var->nodereg+ " to i8");
         var->nodereg = fixedReg;
     }
     else if(var->name == "BOOL") {
         string fixedReg =cb.freshVar();
-        cb.emit(fixedReg + " = trunc i32 " + ptr+ " to i1");
+        cb.emit(fixedReg + " = trunc i32 " + var->nodereg+ " to i1");
         var->nodereg = fixedReg;
     }
 }
@@ -130,13 +130,25 @@ void  emitStore(Node* n,int offset){
     cb.emit(ptr + " = getelementptr i32, i32* %array, i32 " + std::to_string(offset));
     if(n->name == "BYTE") {
         string fixedReg =cb.freshVar();
-        cb.emit(fixedReg + " = trunc i32 " + ptr+ " to i8");
+        cb.emit(fixedReg + " = trunc i32 " + n->nodereg+ " to i8");
         n->nodereg = fixedReg;
     }
     else if(n->name == "BOOL") {
         string fixedReg =cb.freshVar();
-        cb.emit(fixedReg + " = trunc i32 " + ptr+ " to i1");
+        cb.emit(fixedReg + " = trunc i32 " + n->nodereg+ " to i1");
         n->nodereg = fixedReg;
     }
-    cb.emit("store i32"+n->nodereg+", i32* " + ptr);
+    cb.emit("store i32 "+n->nodereg+", i32* " + ptr);
+}
+
+void emitPhiVal(Node* exp){
+    CodeBuffer &cb=CodeBuffer::instance();
+    string phi_label=cb.freshLabel();
+    exp->nodereg=cb.freshVar();
+    cb.emit(exp->t_label+":");
+    cb.emit("br label "+phi_label);
+    cb.emit(exp->f_label+":");
+    cb.emit("br label "+phi_label);
+    cb.emit(phi_label+":");
+    cb.emit(exp->nodereg+" = phi i32 [i32 1, "+exp->t_label+"], [i32 0, "+exp->f_label+"]");
 }

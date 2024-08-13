@@ -3,4 +3,4 @@ project(compi5woo)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(compi5woo main.cpp llvmCodeGen.cpp llvmCodeGen.h)
+add_executable(compi5woo llvmCodeGen.cpp llvmCodeGen.h)

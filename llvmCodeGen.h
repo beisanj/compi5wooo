@@ -19,4 +19,5 @@ void emitRelop(Node* op1, Node* op2, Node* operation, Node* res);
 void emitLocalVar(Node* var, int offset);
 void emitStoreDefault(Node* var, int offset);
 void  emitStore(Node* n,int offset);
+void emitPhiVal(Node* exp);
 #endif //COMPI5WOO_LLVMCODEGEN_H

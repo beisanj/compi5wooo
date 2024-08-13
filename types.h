@@ -24,7 +24,7 @@ public:
     virtual ~Node()=default;
     Node(string val, string nm):nodereg(),t_label(),f_label(),value(val),name(nm),n_label(){}
     Node(string nm): nodereg(),t_label(),f_label(),name(nm),n_label(){}
-    Node(Node *n):nodereg(n->nodereg),t_label(n->t_label),f_label(n->f_label),value(n->value),name(n->name),n_label(){}
+    Node(Node *n):nodereg(n->nodereg),t_label(n->t_label),f_label(n->f_label),value(n->value),name(n->name),n_label(n->n_label){}
 
 };
 class Type : public Node {

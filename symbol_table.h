@@ -30,17 +30,13 @@ public:
         for(auto& s : symbols)
             output::printID(s->name ,s->offset, s->type);
     }
-    int checkIfAlreadyExists(string name){
-
+    bool checkIfAlreadyExists(string name){
         for(auto& s : symbols){
-
             if(s->name == name){
-
-                return s->offset;
+                return true;
             }
-
         }
-        return -1;
+        return false;
     }
     symbol* retSymbol(string name){
         for(auto& s : symbols){
@@ -50,15 +46,15 @@ public:
         }
         return nullptr;
     }
-    int addSymbol(string name,string type,int val){
-        if(checkIfAlreadyExists(name) == -1){
+    bool addSymbol(string name,string type,int val){
+        if(checkIfAlreadyExists(name)){
             return false;
         }
         symbol* new_symbol = new symbol(name,type,curr_offset,val);
         symbols.push_back(new_symbol);
         curr_offset++;
-      //  cout<< "reached addSymbol"<<endl;
-        return curr_offset-1;
+        //  cout<< "reached addSymbol"<<endl;
+        return true;
     }
 };
 
@@ -69,7 +65,7 @@ public:
     symbolSubTable* addSubTable(){
         int cur_offset=0;
         if(!SubTables.empty()){
-         //   cout<<"68"<<endl;
+            //   cout<<"68"<<endl;
 
             cur_offset = SubTables.back()->curr_offset;
         }
@@ -78,31 +74,32 @@ public:
         return SubTables.back();
     }
     symbolTable(){
-     //   cout<<"75"<<endl;
+        //   cout<<"75"<<endl;
         addSubTable();
     }
     bool checkIfAlreadyExists(string name){
-
+        if(SubTables.empty())
+            return false;
         for (auto& s : SubTables){
-
-            if(s->checkIfAlreadyExists(name) != -1){
-
+            //  cout<<"checkIfAlreadyExists"<<endl;
+            if(s->checkIfAlreadyExists(name)){
                 return true;
             }
         }
 
-
         return false;
-
     }
     int getOffset(string name){
+        if(SubTables.empty())
+            return false;
         for (auto& s : SubTables){
-            int offset=s->checkIfAlreadyExists(name);
-            if(offset!=-1){
-                return offset;
-
+            for(auto& t : s->symbols){
+                if(t->name == name){
+                    return t->offset;
+                }
             }
         }
+
         return -1;
     }
     symbol* getSymbol(string name){
@@ -115,7 +112,7 @@ public:
     }
     Node* checkIfLegalFunction(string funcName,Node* arg/*, Node*& res*/) {
         string typeofarg=arg->name;
-       // cout<<"func name"<<funcName<<endl;
+        // cout<<"func name"<<funcName<<endl;
         Node *n11=dynamic_cast<IDClass*>(arg);
         if(n11){
             typeofarg=getSymbol(arg->name)->type;
@@ -124,33 +121,31 @@ public:
             if (typeofarg == "STRING") {
                 return new Node("print","VOID");
             } else {
-                output::errorPrototypeMismatch(yylineno,funcName,"STRING");
+                output::errorPrototypeMismatch(yylineno,funcName,"string");
                 exit(0);
             }
 
         }
         else if (funcName =="printi"){
-            if(typeofarg == "INT"||typeofarg=="BYTE"){
+            if(typeofarg == "INT"){
                 return new Node("printi","VOID");
 
             } else {
-                output::errorPrototypeMismatch(yylineno,funcName,"INT");
+                output::errorPrototypeMismatch(yylineno,funcName,"int");
                 exit(0);
             }
         }
         else if (funcName == "readi"){
-            if(typeofarg == "INT"||typeofarg=="BYTE"){
+            if(typeofarg == "INT"){
                 return new Node("readi","INT");
-              //  cout<<"success line 128"<<endl;
-               // return true;
+                //  cout<<"success line 128"<<endl;
+                // return true;
             } else {
-                output::errorPrototypeMismatch(yylineno,funcName,"INT");
+                output::errorPrototypeMismatch(yylineno,funcName,"int");
                 exit(0);
             }
 
         }
-        output::errorUndefFunc(yylineno,funcName);
-        exit(0);
         return nullptr;
     }
     void removeSubTable(){

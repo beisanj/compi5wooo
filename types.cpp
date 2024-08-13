@@ -3,6 +3,7 @@
 #define YYSTYPE Node*
 #include "hw3_output.hpp"
 #include "symbol_table.h"
+#include "cg.hpp"
 using namespace output;
 using namespace  std;
 /// global variables
@@ -150,17 +151,23 @@ void createRes(Node* op1,Node* op2,Node*& res){
 
 //for assignment fpurposes
 Node* checkIfLegalCastingWithBool(Node* castTo,Node* castFrom/*,Node*& finalExp*/){
+    CodeBuffer &cb=CodeBuffer::instance();
     string castToType=castTo->name;
     string castFromType=castFrom->name;
     IDClass *to=dynamic_cast<IDClass*>(castTo);
     IDClass *from=dynamic_cast<IDClass*>(castFrom);
+    cb.emit("159");
+
     if(to){
         castToType=table->getSymbol(castTo->name)->type;
+        cb.emit("to not null");
+        cb.printCodeBuffer(); cb.printGlobalBuffer();
     }
     if(from){
         castFromType=table->getSymbol(castFrom->name)->type;
+        cb.emit("from not null");
     }
-
+    cb.printCodeBuffer(); cb.printGlobalBuffer();
     if(castToType=="INT"&&(castFromType=="BYTE"||castFromType=="INT")){
         return new Num("1");
     }
