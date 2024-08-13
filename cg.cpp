@@ -36,7 +36,7 @@ void emitInitial(){
     cb.emit("    call i32 (i8*, ...) @printf(i8* %spec_ptr, i8* %0)");
     cb.emit("    ret void");
     cb.emit("}");
-    cb.emit("@.MessageDivError = constant[23 x i8] c\"Error division by zero\\00\"");
+    cb.emit("@.MessageDivError = constant [23 x i8] c\"Error division by zero\\00\"");
     cb.emit("define void @checkIfDivisionBy0(i32) {");
     string resOfComp= cb.freshVar();
     cb.emit(resOfComp+"= icmp eq i32 %0,0");

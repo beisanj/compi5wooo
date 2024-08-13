@@ -148,11 +148,11 @@ void emitPhiVal(Node* exp){
     string phi_label=cb.freshLabel();
     exp->nodereg=cb.freshVar();
     cb.emit(exp->t_label+":");
-    cb.emit("br label "+phi_label);
+    cb.emit("br label %"+phi_label);
     cb.emit(exp->f_label+":");
-    cb.emit("br label "+phi_label);
+    cb.emit("br label %"+phi_label);
     cb.emit(phi_label+":");
-    cb.emit(exp->nodereg+" = phi i32 [i32 1, "+exp->t_label+"], [i32 0, "+exp->f_label+"]");
+    cb.emit(exp->nodereg+" = phi i32 [ 1, %"+exp->t_label+"], [ 0, %"+exp->f_label+"]");
 }
 
 void emitPrepForWhile(){
@@ -160,7 +160,7 @@ void emitPrepForWhile(){
     string whileLabel=cb.freshLabel();
     WhileLabels* wl= new WhileLabels(whileLabel,"");
     cg->whiles.push_back(wl);
-    cb.emit("br label "+whileLabel);
+    cb.emit("br label %"+whileLabel);
     cb.emit(whileLabel+":");
 
 }

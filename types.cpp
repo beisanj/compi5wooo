@@ -156,18 +156,12 @@ Node* checkIfLegalCastingWithBool(Node* castTo,Node* castFrom/*,Node*& finalExp*
     string castFromType=castFrom->name;
     IDClass *to=dynamic_cast<IDClass*>(castTo);
     IDClass *from=dynamic_cast<IDClass*>(castFrom);
-    cb.emit("159");
-
     if(to){
         castToType=table->getSymbol(castTo->name)->type;
-        cb.emit("to not null");
-        cb.printCodeBuffer(); cb.printGlobalBuffer();
     }
     if(from){
         castFromType=table->getSymbol(castFrom->name)->type;
-        cb.emit("from not null");
     }
-    cb.printCodeBuffer(); cb.printGlobalBuffer();
     if(castToType=="INT"&&(castFromType=="BYTE"||castFromType=="INT")){
         return new Num("1");
     }
