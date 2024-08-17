@@ -49,12 +49,6 @@ cmake_ninja_workdir = C$:/Users/bisan/CLionProjects/compi5woo/cmake-build-debug/
 
 build cmake_object_order_depends_target_compi5woo: phony || CMakeFiles/compi5woo.dir
 
-build CMakeFiles/compi5woo.dir/main.cpp.obj: CXX_COMPILER__compi5woo_Debug C$:/Users/bisan/CLionProjects/compi5woo/main.cpp || cmake_object_order_depends_target_compi5woo
-  DEP_FILE = CMakeFiles\compi5woo.dir\main.cpp.obj.d
-  FLAGS = -g -std=gnu++14
-  OBJECT_DIR = CMakeFiles\compi5woo.dir
-  OBJECT_FILE_DIR = CMakeFiles\compi5woo.dir
-
 build CMakeFiles/compi5woo.dir/llvmCodeGen.cpp.obj: CXX_COMPILER__compi5woo_Debug C$:/Users/bisan/CLionProjects/compi5woo/llvmCodeGen.cpp || cmake_object_order_depends_target_compi5woo
   DEP_FILE = CMakeFiles\compi5woo.dir\llvmCodeGen.cpp.obj.d
   FLAGS = -g -std=gnu++14
@@ -69,7 +63,7 @@ build CMakeFiles/compi5woo.dir/llvmCodeGen.cpp.obj: CXX_COMPILER__compi5woo_Debu
 #############################################
 # Link the executable compi5woo.exe
 
-build compi5woo.exe: CXX_EXECUTABLE_LINKER__compi5woo_Debug CMakeFiles/compi5woo.dir/main.cpp.obj CMakeFiles/compi5woo.dir/llvmCodeGen.cpp.obj
+build compi5woo.exe: CXX_EXECUTABLE_LINKER__compi5woo_Debug CMakeFiles/compi5woo.dir/llvmCodeGen.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\compi5woo.dir

@@ -151,7 +151,6 @@ void createRes(Node* op1,Node* op2,Node*& res){
 
 //for assignment fpurposes
 Node* checkIfLegalCastingWithBool(Node* castTo,Node* castFrom/*,Node*& finalExp*/){
-    CodeBuffer &cb=CodeBuffer::instance();
     string castToType=castTo->name;
     string castFromType=castFrom->name;
     IDClass *to=dynamic_cast<IDClass*>(castTo);
@@ -198,12 +197,12 @@ Node* checkIfLegalCasting(Node* castTo,Node* castFrom/*,Node*& finalExp*/){
     //   cout<<"castFromType: "<<castFromType<<endl;
     if(castToType=="BYTE" &&( castFromType == "INT" || castFromType == "BYTE")){
         //int realVal= stoi(castFrom->value);
-        if(!from) castFrom->name="BYTE"; /// i dont think we should change this! it doesnt matter anyway we wont need it later presumably and if we had to use ti again we'll have to go through the recursive process all over again with $1, so we'll derive a new node entirely which wont have the faulty values
+      //  if(!from) castFrom->name="BYTE"; /// i dont think we should change this! it doesnt matter anyway we wont need it later presumably and if we had to use ti again we'll have to go through the recursive process all over again with $1, so we'll derive a new node entirely which wont have the faulty values
         return new NumB(castFrom->value);
 
     }
     if(castToType=="INT"&&( castFromType == "INT" || castFromType == "BYTE")){
-        if(!from) castFrom->name="INT"; ///
+      //  if(!from) castFrom->name="INT"; ///
         return new Num(castFrom->value);
 
     }

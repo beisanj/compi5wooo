@@ -8,6 +8,7 @@
 #include <vector>
 #include "hw3_output.hpp"
 #include "types.h"
+#include "cg.hpp"
 using std::vector;
 using std::string;
 extern int yylineno;
@@ -121,32 +122,52 @@ public:
             if (typeofarg == "STRING") {
                 return new Node("print","VOID");
             } else {
-                output::errorPrototypeMismatch(yylineno,funcName,"string");
+                output::errorPrototypeMismatch(yylineno,funcName,"STRING");
                 exit(0);
             }
 
         }
         else if (funcName =="printi"){
-            if(typeofarg == "INT"){
+            if(typeofarg == "INT"||typeofarg=="BYTE"){
                 return new Node("printi","VOID");
 
             } else {
-                output::errorPrototypeMismatch(yylineno,funcName,"int");
+                output::errorPrototypeMismatch(yylineno,funcName,"INT");
                 exit(0);
             }
         }
         else if (funcName == "readi"){
-            if(typeofarg == "INT"){
+            if(typeofarg == "INT"||typeofarg=="BYTE"){
                 return new Node("readi","INT");
                 //  cout<<"success line 128"<<endl;
                 // return true;
             } else {
-                output::errorPrototypeMismatch(yylineno,funcName,"int");
+                output::errorPrototypeMismatch(yylineno,funcName,"INT");
                 exit(0);
             }
 
         }
+        output::errorUndefFunc(yylineno,funcName);
+        exit(0);
         return nullptr;
+    }
+    bool checkIfBool(string idName){
+        if(SubTables.empty())
+            return false;
+        for (auto& s : SubTables){
+            for(auto& t : s->symbols){
+                if(t->name == idName){
+                    if(t->type=="BOOL"){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
     void removeSubTable(){
         /*
@@ -154,7 +175,6 @@ public:
             return;
         }
 
-        symbolSubTable *toRemove=SubTables.back();
         output::endScope();
         if(SubTables.size()==1){
             output::printID("print",0,output::makeFunctionType("STRING","VOID"));
@@ -164,9 +184,11 @@ public:
         for(auto &s : toRemove->symbols){
             output::printID(s->name, s->offset,s->type);
         }
-        SubTables.pop_back();
+
         //
          */
+    //    symbolSubTable *toRemove=SubTables.back();
+        SubTables.pop_back();
     }
 
 };

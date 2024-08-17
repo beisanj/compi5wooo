@@ -27,4 +27,8 @@ void editLabelsOfWhile(Node* exp);
 void emitPrepForWhile();
 void emitFunctionCall(Node *res,Node *func, Node* args);
 void emitString(Node* res);
+void emitPrepForIf();
+void emitNumB(Node* n);
+void emitConversion(string s,Node* type ,Node* exp);
+void emitPrepForBool(Node* id);
 #endif //COMPI5WOO_LLVMCODEGEN_H
