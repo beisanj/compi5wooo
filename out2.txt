@@ -1,0 +1,98 @@
+@.label_17 = constant [2 x i8] c"*\00"
+@.label_22 = constant [2 x i8] c"*\00"
+declare void @exit(i32)
+declare i32 @printf(i8*, ...)
+declare i32 @scanf(i8*, ...)
+@.int_specifier_scan = constant [3 x i8] c"%d\00"
+@.int_specifier = constant [4 x i8] c"%d\0A\00"
+@.str_specifier = constant [4 x i8] c"%s\0A\00"
+define i32 @readi(i32) {
+    %ret_val = alloca i32
+    %spec_ptr = getelementptr [3 x i8], [3 x i8]* @.int_specifier_scan, i32 0, i32 0
+    call i32 (i8*, ...) @scanf(i8* %spec_ptr, i32* %ret_val)
+    %val = load i32, i32* %ret_val
+    ret i32 %val
+}
+define void @printi(i32) {
+    %spec_ptr = getelementptr [4 x i8], [4 x i8]* @.int_specifier, i32 0, i32 0
+    call i32 (i8*, ...) @printf(i8* %spec_ptr, i32 %0)
+    ret void
+}
+define void @print(i8*) {
+    %spec_ptr = getelementptr [4 x i8], [4 x i8]* @.str_specifier, i32 0, i32 0
+    call i32 (i8*, ...) @printf(i8* %spec_ptr, i8* %0)
+    ret void
+}
+@.MessageDivError = constant [23 x i8] c"Error division by zero\00"
+define void @checkIfDivisionBy0(i32) {
+%t2= icmp eq i32 %0,0
+br i1 %t2,label %zeroLabel,label %notZero
+zeroLabel:
+%t3= getelementptr [23 x i8], [23 x i8]* @.MessageDivError, i32 0, i32 0
+call void @print(i8* %t3)
+call void @exit(i32 0)
+ret void
+notZero:
+ret void
+}
+define i32 @main() {
+%t4= add i32 50,0
+%array = alloca i32, i32 %t4
+br label %label_2
+label_2:
+%t5 = add i8 0, 0
+%t6 = getelementptr i32, i32* %array, i32 0
+%t7 = zext i8 %t5 to i32
+store i32 %t7, i32* %t6
+br label %label_5
+label_5:
+%t8 = getelementptr i32, i32* %array, i32 0
+%t9 = load i32, i32* %t8
+%t10 = trunc i32 %t9 to i8
+%t11 = add i32 0, 10
+%t13 = zext i8 %t10 to i32
+%t12= icmp slt i32 %t13, %t11
+br i1 %t12, label %label_8, label %label_9
+label_8:
+%t14 = getelementptr i32, i32* %array, i32 0
+%t15 = load i32, i32* %t14
+%t16 = trunc i32 %t15 to i8
+%t18 = zext i8 %t16 to i32
+call void @printi(i32 %t18)
+br label %label_10
+label_10:
+%t19 = getelementptr i32, i32* %array, i32 0
+%t20 = load i32, i32* %t19
+%t21 = trunc i32 %t20 to i8
+%t22 = add i32 0, 1
+%t24 = zext i8 %t21 to i32
+%t23 = add i32 %t24, %t22
+%t25 = add i32 0, 10
+%t26= icmp slt i32 %t23, %t25
+br i1 %t26, label %label_15, label %label_16
+br label %label_15
+label_15:
+%t27 = getelementptr [2 x i8], [2 x i8]* @.label_17, i32 0, i32 0
+call void @print(i8* %t27)
+br label %label_18
+label_16:
+br label %label_18
+label_18:
+br label %label_19
+label_19:
+%t29 = getelementptr i32, i32* %array, i32 0
+%t30 = load i32, i32* %t29
+%t31 = trunc i32 %t30 to i8
+%t32 = add i8 0, 1
+%t33 = add i8 %t31, %t32
+%t34= zext i8 %t33 to i32
+%t35= trunc i32 %t34 to i8
+%t36 = getelementptr i32, i32* %array, i32 0
+%t37 = zext i8 %t35 to i32
+store i32 %t37, i32* %t36
+br label %label_5
+label_9:
+%t38 = getelementptr [2 x i8], [2 x i8]* @.label_22, i32 0, i32 0
+call void @print(i8* %t38)
+ret i32 0
+}

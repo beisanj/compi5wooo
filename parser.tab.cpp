@@ -78,16 +78,18 @@
     #include <iostream>
     extern int yylineno;
     extern char* yytext;
+    extern llvmCodeGen* cg;
+    extern std::vector<WhileLabels*> whiles;
     int yylex();
     CodeBuffer &cb= CodeBuffer::instance();
      symbolTable* table;
      llvmCodeGen* cgen;
     int yyerror(const char* message);
-    extern bool isLoop;
+    extern int isLoop;
      using namespace output;
      using namespace std;
 
-#line 91 "parser.tab.cpp"
+#line 93 "parser.tab.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -153,14 +155,18 @@ enum yysymbol_kind_t
   YYSYMBOL_Statement = 35,                 /* Statement  */
   YYSYMBOL_36_1 = 36,                      /* $@1  */
   YYSYMBOL_37_2 = 37,                      /* $@2  */
-  YYSYMBOL_Call = 38,                      /* Call  */
-  YYSYMBOL_Type = 39,                      /* Type  */
-  YYSYMBOL_Exp = 40,                       /* Exp  */
-  YYSYMBOL_41_3 = 41,                      /* $@3  */
-  YYSYMBOL_42_4 = 42,                      /* $@4  */
-  YYSYMBOL_OPENSUBTABLE = 43,              /* OPENSUBTABLE  */
-  YYSYMBOL_CLOSESUBTABLE = 44,             /* CLOSESUBTABLE  */
-  YYSYMBOL_CHECKIFBOOL = 45                /* CHECKIFBOOL  */
+  YYSYMBOL_38_3 = 38,                      /* $@3  */
+  YYSYMBOL_39_4 = 39,                      /* $@4  */
+  YYSYMBOL_Call = 40,                      /* Call  */
+  YYSYMBOL_Type = 41,                      /* Type  */
+  YYSYMBOL_Exp = 42,                       /* Exp  */
+  YYSYMBOL_43_5 = 43,                      /* $@5  */
+  YYSYMBOL_44_6 = 44,                      /* $@6  */
+  YYSYMBOL_OPENSUBTABLE = 45,              /* OPENSUBTABLE  */
+  YYSYMBOL_CLOSESUBTABLE = 46,             /* CLOSESUBTABLE  */
+  YYSYMBOL_CHECKIFBOOL = 47,               /* CHECKIFBOOL  */
+  YYSYMBOL_M2 = 48,                        /* M2  */
+  YYSYMBOL_M3 = 49                         /* M3  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -482,16 +488,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  24
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   147
+#define YYLAST   161
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  32
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  14
+#define YYNNTS  18
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  42
+#define YYNRULES  46
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  85
+#define YYNSTATES  91
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   286
@@ -543,11 +549,11 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    39,    39,    41,    42,    45,    46,    47,    48,    49,
-      50,    51,    52,    53,    53,    53,    54,    55,    58,    61,
-      62,    63,    66,    67,    68,    69,    70,    71,    72,    73,
-      74,    75,    76,    77,    77,    78,    78,    79,    80,    81,
-      84,    86,    88
+       0,    41,    41,    43,    44,    47,    48,    49,    50,    51,
+      52,    53,    53,    54,    55,    55,    55,    55,    56,    57,
+      60,    63,    64,    65,    68,    69,    70,    71,    72,    73,
+      74,    75,    76,    77,    78,    79,    79,    80,    80,    81,
+      82,    83,    86,    88,    90,    92,    94
 };
 #endif
 
@@ -568,8 +574,8 @@ static const char *const yytname[] =
   "LPAREN", "RBRACE", "LBRACE", "IF", "ELSE", "STRING", "INT", "NUM",
   "BYTE", "BOOL", "ID", "B", "TRUE", "FALSE", "CONST", "SC", "CONTINUE",
   "BREAK", "RETURN", "WHILE", "$accept", "Program", "Statements",
-  "Statement", "$@1", "$@2", "Call", "Type", "Exp", "$@3", "$@4",
-  "OPENSUBTABLE", "CLOSESUBTABLE", "CHECKIFBOOL", YY_NULLPTR
+  "Statement", "$@1", "$@2", "$@3", "$@4", "Call", "Type", "Exp", "$@5",
+  "$@6", "OPENSUBTABLE", "CLOSESUBTABLE", "CHECKIFBOOL", "M2", "M3", YY_NULLPTR
 };
 
 static const char *
@@ -591,7 +597,7 @@ static const yytype_int16 yytoknum[] =
 };
 #endif
 
-#define YYPACT_NINF (-57)
+#define YYPACT_NINF (-79)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -605,15 +611,16 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-      80,   -57,    -8,   -57,   -57,   -57,     6,   -19,   -12,    -2,
-      34,    55,    80,   -57,    29,    38,    80,    49,    49,    49,
-     -57,   -57,   -57,    49,   -57,   -57,   -57,     3,    62,    49,
-      95,   -57,    40,    52,   -57,   -57,   -57,   133,    46,    35,
-     117,   133,    49,   -57,   -57,   -57,    54,   125,   -57,   -57,
-     -57,    49,    49,    49,    49,   -57,   -57,   -57,    68,    45,
-     -57,    49,   -57,    49,    49,    14,     2,    76,   -57,    80,
-     -57,   -57,   -57,   138,    25,   -57,   -57,    70,    80,   -57,
-     -57,    80,   -57,   -57,   -57
+      83,   -79,   -79,   -79,   -79,   -79,    -5,    -7,    11,    12,
+     -79,    40,    83,   -79,    15,   -79,    83,    51,   114,    24,
+     -79,   -79,   -79,    53,   -79,   -79,   -79,    42,    65,   114,
+     114,    98,   -79,    43,    -5,   -79,   -79,   -79,   136,   114,
+     114,    -1,   -79,   152,    56,   -79,    58,   144,   -79,   -79,
+     -79,   114,   114,   114,   114,   -79,    41,   152,   114,   -79,
+     -79,   -79,   114,   -79,   114,   114,    27,     6,    61,   -79,
+     -79,    64,    47,    83,   -79,    52,    16,   -79,   -79,   -79,
+     -79,   -79,    83,    60,   -79,   -79,   -79,   -79,    83,   -79,
+     -79
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -621,29 +628,30 @@ static const yytype_int16 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,    40,     0,    19,    20,    21,     0,     0,     0,     0,
-       0,     0,     2,     3,     0,     0,     0,     0,     0,     0,
-      17,    16,    10,     0,     1,     4,     9,     0,     0,     0,
-       0,    29,    27,    25,    30,    31,    26,    42,     0,     0,
-       0,    13,     0,     6,    41,    32,     0,     0,    28,    35,
-      33,     0,     0,     0,     0,    40,     8,    18,     0,     0,
-       5,     0,    22,     0,     0,    38,    37,    23,    24,     0,
-      40,     7,    39,    36,    34,    41,    14,    12,     0,    40,
-      41,     0,    15,    41,    11
+       0,    42,    46,    21,    22,    23,    46,     0,     0,     0,
+      14,     0,     2,     3,     0,    46,     0,     0,     0,     0,
+      19,    18,    10,     0,     1,     4,     9,     0,     0,     0,
+       0,     0,    31,    29,    27,    32,    33,    28,     0,     0,
+       0,     0,    43,    44,     0,    34,     0,     0,    30,    37,
+      35,     0,     0,     0,     0,    20,     0,    15,     0,     6,
+       5,    42,     0,    24,     0,     0,    40,    39,    25,    26,
+       8,     0,     0,     0,    41,    38,    36,    42,     7,    45,
+      16,    43,     0,    13,    43,    42,    17,    11,     0,    43,
+      12
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -57,   -57,    71,   -11,   -57,   -57,     0,    58,   -16,   -57,
-     -57,   -50,   -56,   -57
+     -79,   -79,    68,   -11,   -79,   -79,   -79,   -79,     0,    50,
+     -21,   -79,   -79,   -56,   -78,   -79,   -79,    -2
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,    11,    12,    13,    58,    78,    36,    15,    37,    64,
-      63,    16,    60,    38
+       0,    11,    12,    13,    88,    23,    71,    82,    37,    15,
+      38,    65,    64,    16,    60,    44,    81,    17
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -651,40 +659,44 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      14,    25,    39,    40,    17,    69,    42,    41,    20,    18,
-      53,    54,    14,    45,    47,    21,    14,    25,    19,    77,
-      76,    52,    53,    54,    82,    22,    59,    84,    14,    81,
-      43,    51,    52,    53,    54,    65,    66,    67,    68,    49,
-      50,    51,    52,    53,    54,    72,    23,    73,    74,    49,
-      50,    51,    52,    53,    54,    24,    26,    55,    75,    29,
-      27,    30,    56,    48,    19,    61,    31,    80,    32,    14,
-      83,    33,    71,    34,    35,    44,     1,     2,    14,    70,
-       3,    14,     4,     5,     6,    54,    79,    28,    46,     0,
-       7,     8,     9,    10,     1,     2,     0,     0,     3,     0,
-       4,     5,     6,     0,     0,    29,     0,    30,     7,     8,
-       9,    10,    31,     3,    32,     4,     5,    33,     0,    34,
-      35,    49,    50,    51,    52,    53,    54,     0,    57,    49,
-      50,    51,    52,    53,    54,     0,    62,    49,    50,    51,
-      52,    53,    54,    50,    51,    52,    53,    54
+      14,    25,    58,    83,    19,    73,    86,    18,    43,    45,
+      47,    90,    14,    27,    53,    54,    14,    25,    56,    57,
+      20,    80,    51,    52,    53,    54,    59,    39,    14,    87,
+      66,    67,    68,    69,    52,    53,    54,    72,    21,    22,
+      24,    74,    26,    75,    76,    49,    50,    51,    52,    53,
+      54,    49,    50,    51,    52,    53,    54,    50,    51,    52,
+      53,    54,    79,    29,    41,    40,    48,    61,    70,    62,
+      54,    84,     0,    14,    78,    77,    85,    89,    42,     1,
+       2,    46,    14,     3,    28,     4,     5,     6,    14,     0,
+       0,     0,     0,     7,     8,     9,    10,     1,     2,     0,
+       0,     3,     0,     4,     5,     6,     0,     0,    30,     0,
+      31,     7,     8,     9,    10,    32,     3,    33,     4,     5,
+      34,     0,    35,    36,    30,     0,    31,     0,     0,     0,
+       0,    32,     0,    33,     0,     0,    34,     0,    35,    36,
+      49,    50,    51,    52,    53,    54,     0,    55,    49,    50,
+      51,    52,    53,    54,     0,    63,    49,    50,    51,    52,
+      53,    54
 };
 
 static const yytype_int8 yycheck[] =
 {
-       0,    12,    18,    19,    12,    55,     3,    23,    27,     3,
-       8,     9,    12,    29,    30,    27,    16,    28,    12,    75,
-      70,     7,     8,     9,    80,    27,    42,    83,    28,    79,
-      27,     6,     7,     8,     9,    51,    52,    53,    54,     4,
-       5,     6,     7,     8,     9,    61,    12,    63,    64,     4,
-       5,     6,     7,     8,     9,     0,    27,    11,    69,    10,
-      22,    12,    27,    23,    12,    11,    17,    78,    19,    69,
-      81,    22,    27,    24,    25,    13,    14,    15,    78,    11,
-      18,    81,    20,    21,    22,     9,    16,    16,    30,    -1,
-      28,    29,    30,    31,    14,    15,    -1,    -1,    18,    -1,
-      20,    21,    22,    -1,    -1,    10,    -1,    12,    28,    29,
-      30,    31,    17,    18,    19,    20,    21,    22,    -1,    24,
-      25,     4,     5,     6,     7,     8,     9,    -1,    11,     4,
-       5,     6,     7,     8,     9,    -1,    11,     4,     5,     6,
-       7,     8,     9,     5,     6,     7,     8,     9
+       0,    12,     3,    81,     6,    61,    84,    12,    29,    30,
+      31,    89,    12,    15,     8,     9,    16,    28,    39,    40,
+      27,    77,     6,     7,     8,     9,    27,     3,    28,    85,
+      51,    52,    53,    54,     7,     8,     9,    58,    27,    27,
+       0,    62,    27,    64,    65,     4,     5,     6,     7,     8,
+       9,     4,     5,     6,     7,     8,     9,     5,     6,     7,
+       8,     9,    73,    12,    22,    12,    23,    11,    27,    11,
+       9,    82,    -1,    73,    27,    11,    16,    88,    13,    14,
+      15,    31,    82,    18,    16,    20,    21,    22,    88,    -1,
+      -1,    -1,    -1,    28,    29,    30,    31,    14,    15,    -1,
+      -1,    18,    -1,    20,    21,    22,    -1,    -1,    10,    -1,
+      12,    28,    29,    30,    31,    17,    18,    19,    20,    21,
+      22,    -1,    24,    25,    10,    -1,    12,    -1,    -1,    -1,
+      -1,    17,    -1,    19,    -1,    -1,    22,    -1,    24,    25,
+       4,     5,     6,     7,     8,     9,    -1,    11,     4,     5,
+       6,     7,     8,     9,    -1,    11,     4,     5,     6,     7,
+       8,     9
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -692,34 +704,35 @@ static const yytype_int8 yycheck[] =
 static const yytype_int8 yystos[] =
 {
        0,    14,    15,    18,    20,    21,    22,    28,    29,    30,
-      31,    33,    34,    35,    38,    39,    43,    12,     3,    12,
-      27,    27,    27,    12,     0,    35,    27,    22,    34,    10,
-      12,    17,    19,    22,    24,    25,    38,    40,    45,    40,
-      40,    40,     3,    27,    13,    40,    39,    40,    23,     4,
-       5,     6,     7,     8,     9,    11,    27,    11,    36,    40,
-      44,    11,    11,    42,    41,    40,    40,    40,    40,    43,
-      11,    27,    40,    40,    40,    35,    43,    44,    37,    16,
-      35,    43,    44,    35,    44
+      31,    33,    34,    35,    40,    41,    45,    49,    12,    49,
+      27,    27,    27,    37,     0,    35,    27,    49,    34,    12,
+      10,    12,    17,    19,    22,    24,    25,    40,    42,     3,
+      12,    22,    13,    42,    47,    42,    41,    42,    23,     4,
+       5,     6,     7,     8,     9,    11,    42,    42,     3,    27,
+      46,    11,    11,    11,    44,    43,    42,    42,    42,    42,
+      27,    38,    42,    45,    42,    42,    42,    11,    27,    35,
+      45,    48,    39,    46,    35,    16,    46,    45,    36,    35,
+      46
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
        0,    32,    33,    34,    34,    35,    35,    35,    35,    35,
-      35,    35,    35,    36,    37,    35,    35,    35,    38,    39,
-      39,    39,    40,    40,    40,    40,    40,    40,    40,    40,
-      40,    40,    40,    41,    40,    42,    40,    40,    40,    40,
-      43,    44,    45
+      35,    36,    35,    35,    37,    38,    39,    35,    35,    35,
+      40,    41,    41,    41,    42,    42,    42,    42,    42,    42,
+      42,    42,    42,    42,    42,    43,    42,    44,    42,    42,
+      42,    42,    45,    46,    47,    48,    49
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     1,     2,     5,     3,     5,     4,     2,
-       2,    11,     7,     0,     0,     9,     2,     2,     4,     1,
-       1,     1,     3,     3,     3,     1,     1,     1,     2,     1,
-       1,     1,     2,     0,     4,     0,     4,     3,     3,     4,
-       0,     0,     1
+       0,     2,     1,     1,     2,     5,     4,     6,     5,     2,
+       2,     0,    14,     9,     0,     0,     0,    10,     2,     2,
+       4,     1,     1,     1,     3,     3,     3,     1,     1,     1,
+       2,     1,     1,     1,     2,     0,     4,     0,     4,     3,
+       3,     4,     0,     0,     1,     0,     0
 };
 
 
@@ -1187,253 +1200,277 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* Program: Statements  */
-#line 39 "parser.ypp"
+#line 41 "parser.ypp"
                                                                     {}
-#line 1193 "parser.tab.cpp"
+#line 1206 "parser.tab.cpp"
     break;
 
   case 3: /* Statements: Statement  */
-#line 41 "parser.ypp"
+#line 43 "parser.ypp"
                                                                     {}
-#line 1199 "parser.tab.cpp"
+#line 1212 "parser.tab.cpp"
     break;
 
   case 4: /* Statements: Statements Statement  */
-#line 42 "parser.ypp"
+#line 44 "parser.ypp"
                                                                     {}
-#line 1205 "parser.tab.cpp"
+#line 1218 "parser.tab.cpp"
     break;
 
   case 5: /* Statement: LBRACE OPENSUBTABLE Statements RBRACE CLOSESUBTABLE  */
-#line 45 "parser.ypp"
-                                                                                             {}
-#line 1211 "parser.tab.cpp"
-    break;
-
-  case 6: /* Statement: Type ID SC  */
-#line 46 "parser.ypp"
-                                                                    {checkIfCanDefine(yyvsp[-1]->name); table->SubTables.back()->addSymbol(yyvsp[-1]->name,yyvsp[-2]->name,1);}
-#line 1217 "parser.tab.cpp"
-    break;
-
-  case 7: /* Statement: Type ID ASSIGN Exp SC  */
 #line 47 "parser.ypp"
-                                   { checkIfCanDefine(yyvsp[-3]->name);  table->SubTables.back()->addSymbol(yyvsp[-3]->name,yyvsp[-4]->name,1);  Node* node= checkIfLegalCastingWithBool(yyvsp[-3],yyvsp[-1]);}
-#line 1223 "parser.tab.cpp"
+                                                                                             {}
+#line 1224 "parser.tab.cpp"
     break;
 
-  case 8: /* Statement: ID ASSIGN Exp SC  */
+  case 6: /* Statement: Type M3 ID SC  */
 #line 48 "parser.ypp"
-                                                                    {checkIfDefinedID(yyvsp[-3]); Node* node=checkIfLegalCastingWithBool(yyvsp[-3],yyvsp[-1]); }
-#line 1229 "parser.tab.cpp"
+                                                                        {checkIfCanDefine(yyvsp[-1]->name); table->SubTables.back()->addSymbol(yyvsp[-1]->name,yyvsp[-3]->name,1); int offset=table->getOffset(yyvsp[-1]->name); emitStoreDefault(yyval,offset);}
+#line 1230 "parser.tab.cpp"
+    break;
+
+  case 7: /* Statement: Type M3 ID ASSIGN Exp SC  */
+#line 49 "parser.ypp"
+                                      { checkIfCanDefine(yyvsp[-3]->name); table->SubTables.back()->addSymbol(yyvsp[-3]->name,yyvsp[-5]->name,1);Node* node= checkIfLegalCastingWithBool(yyvsp[-3],yyvsp[-1]); int offset=table->getOffset(yyvsp[-3]->name); if(yyvsp[-1]->name=="BOOL"){emitPhiVal(yyvsp[-1]); } emitStore(yyvsp[-1],offset);}
+#line 1236 "parser.tab.cpp"
+    break;
+
+  case 8: /* Statement: ID M3 ASSIGN Exp SC  */
+#line 50 "parser.ypp"
+                                                                       {checkIfDefinedID(yyvsp[-4]); Node* node=checkIfLegalCastingWithBool(yyvsp[-4],yyvsp[-1]); int offset=table->getOffset(yyvsp[-4]->name); if(yyvsp[-1]->name=="BOOL"){emitPhiVal(yyvsp[-1]);} emitStore(yyvsp[-1],offset); }
+#line 1242 "parser.tab.cpp"
     break;
 
   case 9: /* Statement: Call SC  */
-#line 49 "parser.ypp"
+#line 51 "parser.ypp"
                                                                     {yyval = yyvsp[-1];}
-#line 1235 "parser.tab.cpp"
+#line 1248 "parser.tab.cpp"
     break;
 
   case 10: /* Statement: RETURN SC  */
-#line 50 "parser.ypp"
-                                                                    {}
-#line 1241 "parser.tab.cpp"
-    break;
-
-  case 11: /* Statement: IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement CLOSESUBTABLE ELSE OPENSUBTABLE Statement CLOSESUBTABLE  */
-#line 51 "parser.ypp"
-                                                                                                                         {}
-#line 1247 "parser.tab.cpp"
-    break;
-
-  case 12: /* Statement: IF LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement CLOSESUBTABLE  */
 #line 52 "parser.ypp"
-                                                                                {}
-#line 1253 "parser.tab.cpp"
+                                                                    {cb.emit("ret i32 0");}
+#line 1254 "parser.tab.cpp"
     break;
 
-  case 13: /* $@1: %empty  */
+  case 11: /* $@1: %empty  */
 #line 53 "parser.ypp"
-                              {checkIfBool(yyvsp[0]);}
-#line 1259 "parser.tab.cpp"
+                                                                                                        {cb.emit("br label %"+yyvsp[-7]->f_label); cb.emit(yyvsp[-7]->f_label+":");}
+#line 1260 "parser.tab.cpp"
+    break;
+
+  case 12: /* Statement: IF M3 LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement M2 CLOSESUBTABLE ELSE OPENSUBTABLE $@1 Statement CLOSESUBTABLE  */
+#line 53 "parser.ypp"
+                                                                                                                                                                                               { yyval=new Node("");  yyval->n_label= yyvsp[-6]->n_label; cb.emit("br label %"+yyval->n_label); cb.emit(yyval->n_label+":");}
+#line 1266 "parser.tab.cpp"
+    break;
+
+  case 13: /* Statement: IF M3 LPAREN CHECKIFBOOL RPAREN OPENSUBTABLE Statement M2 CLOSESUBTABLE  */
+#line 54 "parser.ypp"
+                                                                                      {yyval=new Node(""); yyval->n_label=yyvsp[-1]->n_label; cb.emit(yyvsp[-5]->f_label+":"); cb.emit("br label %"+yyval->n_label); cb.emit(yyval->n_label+":"); }
+#line 1272 "parser.tab.cpp"
     break;
 
   case 14: /* $@2: %empty  */
-#line 53 "parser.ypp"
-                                                                     {isLoop=true;}
-#line 1265 "parser.tab.cpp"
-    break;
-
-  case 15: /* Statement: WHILE LPAREN Exp $@1 RPAREN OPENSUBTABLE $@2 Statement CLOSESUBTABLE  */
-#line 53 "parser.ypp"
-                                                                                                             {isLoop=false;}
-#line 1271 "parser.tab.cpp"
-    break;
-
-  case 16: /* Statement: BREAK SC  */
-#line 54 "parser.ypp"
-                                                                    {if(!isLoop) {errorUnexpectedBreak(yylineno);exit(0);}}
-#line 1277 "parser.tab.cpp"
-    break;
-
-  case 17: /* Statement: CONTINUE SC  */
 #line 55 "parser.ypp"
-                                                                    {if(!isLoop) { errorUnexpectedContinue(yylineno);exit(0);}}
-#line 1283 "parser.tab.cpp"
+                    {emitPrepForWhile();}
+#line 1278 "parser.tab.cpp"
     break;
 
-  case 18: /* Call: ID LPAREN Exp RPAREN  */
-#line 58 "parser.ypp"
-                                                                   {yyval=table->checkIfLegalFunction(yyvsp[-3]->name,yyvsp[-1]); }
-#line 1289 "parser.tab.cpp"
+  case 15: /* $@3: %empty  */
+#line 55 "parser.ypp"
+                                                     {checkIfBool(yyvsp[0]); editLabelsOfWhile(yyvsp[0]);}
+#line 1284 "parser.tab.cpp"
     break;
 
-  case 19: /* Type: INT  */
-#line 61 "parser.ypp"
-                                                                    {yyval= new Num(yyvsp[0]->name); }
-#line 1295 "parser.tab.cpp"
+  case 16: /* $@4: %empty  */
+#line 55 "parser.ypp"
+                                                                                                                   {isLoop++;}
+#line 1290 "parser.tab.cpp"
     break;
 
-  case 20: /* Type: BYTE  */
-#line 62 "parser.ypp"
-                                                                    {yyval= new NumB(yyvsp[0]->name);}
-#line 1301 "parser.tab.cpp"
+  case 17: /* Statement: WHILE $@2 LPAREN Exp $@3 RPAREN OPENSUBTABLE $@4 Statement CLOSESUBTABLE  */
+#line 55 "parser.ypp"
+                                                                                                                                                        {isLoop--; emitEndOfWhile();}
+#line 1296 "parser.tab.cpp"
     break;
 
-  case 21: /* Type: BOOL  */
+  case 18: /* Statement: BREAK SC  */
+#line 56 "parser.ypp"
+                                                                    {if(!isLoop) {errorUnexpectedBreak(yylineno);exit(0);} cb.emit("br label %" + cg->whiles.back()->f_label);}
+#line 1302 "parser.tab.cpp"
+    break;
+
+  case 19: /* Statement: CONTINUE SC  */
+#line 57 "parser.ypp"
+                                                                    {if(!isLoop) { errorUnexpectedContinue(yylineno);exit(0);} cb.emit("br label %" + cg->whiles.back()->t_label);}
+#line 1308 "parser.tab.cpp"
+    break;
+
+  case 20: /* Call: ID LPAREN Exp RPAREN  */
+#line 60 "parser.ypp"
+                                                                   {yyval=table->checkIfLegalFunction(yyvsp[-3]->name,yyvsp[-1]); emitFunctionCall(yyval,yyvsp[-3],yyvsp[-1]); }
+#line 1314 "parser.tab.cpp"
+    break;
+
+  case 21: /* Type: INT  */
 #line 63 "parser.ypp"
+                                                                    {yyval= new Num(yyvsp[0]->name); }
+#line 1320 "parser.tab.cpp"
+    break;
+
+  case 22: /* Type: BYTE  */
+#line 64 "parser.ypp"
+                                                                    {yyval= new NumB(yyvsp[0]->name);}
+#line 1326 "parser.tab.cpp"
+    break;
+
+  case 23: /* Type: BOOL  */
+#line 65 "parser.ypp"
                                                                     {yyval= new Bool(yyvsp[0]->name);}
-#line 1307 "parser.tab.cpp"
+#line 1332 "parser.tab.cpp"
     break;
 
-  case 22: /* Exp: LPAREN Exp RPAREN  */
-#line 66 "parser.ypp"
-                                                                    {yyval=yyvsp[-1];}
-#line 1313 "parser.tab.cpp"
-    break;
-
-  case 23: /* Exp: Exp ADD_SUB Exp  */
-#line 67 "parser.ypp"
-                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]);checkIfOpIsIntOrByte(yyvsp[0]);createRes(yyvsp[-2],yyvsp[0],yyval); emitBinop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval); }
-#line 1319 "parser.tab.cpp"
-    break;
-
-  case 24: /* Exp: Exp MULT_DIV Exp  */
+  case 24: /* Exp: LPAREN Exp RPAREN  */
 #line 68 "parser.ypp"
-                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]);checkIfOpIsIntOrByte(yyvsp[0]);createRes(yyvsp[-2],yyvsp[0],yyval); emitBinop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval); }
-#line 1325 "parser.tab.cpp"
+                                                                    {yyval=yyvsp[-1];}
+#line 1338 "parser.tab.cpp"
     break;
 
-  case 25: /* Exp: ID  */
+  case 25: /* Exp: Exp ADD_SUB Exp  */
 #line 69 "parser.ypp"
-                                                                    { checkIfDefinedID(yyvsp[0]); yyval= new IDClass(yyvsp[0]);}
-#line 1331 "parser.tab.cpp"
+                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]);checkIfOpIsIntOrByte(yyvsp[0]);createRes(yyvsp[-2],yyvsp[0],yyval); emitBinop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval); }
+#line 1344 "parser.tab.cpp"
     break;
 
-  case 26: /* Exp: Call  */
+  case 26: /* Exp: Exp MULT_DIV Exp  */
 #line 70 "parser.ypp"
-                                                                    { yyval=new Node(yyvsp[0]); }
-#line 1337 "parser.tab.cpp"
+                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]);checkIfOpIsIntOrByte(yyvsp[0]);createRes(yyvsp[-2],yyvsp[0],yyval); emitBinop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval); }
+#line 1350 "parser.tab.cpp"
     break;
 
-  case 27: /* Exp: NUM  */
+  case 27: /* Exp: ID  */
 #line 71 "parser.ypp"
-                                                                    {yyval = new Num(yyvsp[0]->name); emitNum(yyval);}
-#line 1343 "parser.tab.cpp"
+                                                                    {checkIfDefinedID(yyvsp[0]); yyval= new IDClass(yyvsp[0]); table->getOffset(yyvsp[0]->name); int offset=table->getOffset(yyvsp[0]->name);  if(table->checkIfBool(yyvsp[0]->name)){yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); } emitLocalVar(yyval,offset); if(table->checkIfBool(yyvsp[0]->name)) {emitPrepForBool(yyval);} }
+#line 1356 "parser.tab.cpp"
     break;
 
-  case 28: /* Exp: NUM B  */
+  case 28: /* Exp: Call  */
 #line 72 "parser.ypp"
-                                                                    {checkIfLegalByte(yyvsp[-1]->name); yyval = new NumB(yyvsp[-1]->name); emitNum(yyval);}
-#line 1349 "parser.tab.cpp"
+                                                                    { yyval=new Node(yyvsp[0]); }
+#line 1362 "parser.tab.cpp"
     break;
 
-  case 29: /* Exp: STRING  */
+  case 29: /* Exp: NUM  */
 #line 73 "parser.ypp"
-                                                                    {yyval = new STRINGClass(yyvsp[0]->name);}
-#line 1355 "parser.tab.cpp"
+                                                                    {yyval = new Num(yyvsp[0]->name); emitNum(yyval);  yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel();}
+#line 1368 "parser.tab.cpp"
     break;
 
-  case 30: /* Exp: TRUE  */
+  case 30: /* Exp: NUM B  */
 #line 74 "parser.ypp"
-                                                                    {yyval = new Bool(yyvsp[0]->name); yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel();  cb.emit("br label "+yyval->t_label);}
-#line 1361 "parser.tab.cpp"
+                                                                    {checkIfLegalByte(yyvsp[-1]->name); yyval = new NumB(yyvsp[-1]->name); emitNumB(yyval);  yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel();}
+#line 1374 "parser.tab.cpp"
     break;
 
-  case 31: /* Exp: FALSE  */
+  case 31: /* Exp: STRING  */
 #line 75 "parser.ypp"
-                                                                    {yyval = new Bool(yyvsp[0]->name);yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel(); cb.emit("br label "+yyval->f_label);}
-#line 1367 "parser.tab.cpp"
+                                                                    {yyval = new STRINGClass(yyvsp[0]->name); emitString(yyval);}
+#line 1380 "parser.tab.cpp"
     break;
 
-  case 32: /* Exp: NOT Exp  */
+  case 32: /* Exp: TRUE  */
 #line 76 "parser.ypp"
+                                                                    {yyval = new Bool(yyvsp[0]->name); yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel();  cb.emit("br label %"+yyval->t_label);}
+#line 1386 "parser.tab.cpp"
+    break;
+
+  case 33: /* Exp: FALSE  */
+#line 77 "parser.ypp"
+                                                                    {yyval = new Bool(yyvsp[0]->name);yyval->t_label=cb.freshLabel();yyval->f_label=cb.freshLabel(); cb.emit("br label %"+yyval->f_label);}
+#line 1392 "parser.tab.cpp"
+    break;
+
+  case 34: /* Exp: NOT Exp  */
+#line 78 "parser.ypp"
                                                                     { checkIfBool(yyvsp[0]); string realVal= (yyvsp[0]->value=="false")? "true":"false"; yyval=new Bool(realVal); yyval->t_label=yyvsp[0]->f_label; yyval->f_label=yyvsp[0]->t_label; }
-#line 1373 "parser.tab.cpp"
+#line 1398 "parser.tab.cpp"
     break;
 
-  case 33: /* $@3: %empty  */
-#line 77 "parser.ypp"
-               {cb.emit(yyvsp[-1]->t_label+":"); }
-#line 1379 "parser.tab.cpp"
-    break;
-
-  case 34: /* Exp: Exp AND $@3 Exp  */
-#line 77 "parser.ypp"
-                                                                                                 {checkIfAndOperandsAreBool(yyvsp[-3],yyvsp[0]); string realVal= calculateOp1AndOp2(yyvsp[-3],yyvsp[0]); yyval=new Bool(realVal); yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); cb.emit(yyvsp[-3]->f_label+":"); cb.emit("br label "+yyval->f_label); cb.emit(yyvsp[0]->f_label+":"); cb.emit("br label "+yyval->f_label); cb.emit(yyvsp[0]->t_label+":"); cb.emit("br label "+yyval->t_label); }
-#line 1385 "parser.tab.cpp"
-    break;
-
-  case 35: /* $@4: %empty  */
-#line 78 "parser.ypp"
-              {cb.emit(yyvsp[-1]->f_label+":");}
-#line 1391 "parser.tab.cpp"
-    break;
-
-  case 36: /* Exp: Exp OR $@4 Exp  */
-#line 78 "parser.ypp"
-                                                                                                {checkIfAndOperandsAreBool(yyvsp[-3],yyvsp[0]); string realVal= calculateOp1OrOp2(yyvsp[-3],yyvsp[0]); yyval=new Bool(realVal); yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); cb.emit(yyvsp[-3]->t_label+":"); cb.emit("br label "+yyval->t_label); cb.emit(yyvsp[0]->f_label+":"); cb.emit("br label "+yyval->f_label); cb.emit(yyvsp[0]->t_label+":"); cb.emit("br label "+yyval->t_label);}
-#line 1397 "parser.tab.cpp"
-    break;
-
-  case 37: /* Exp: Exp RELOP_GREATER Exp  */
+  case 35: /* $@5: %empty  */
 #line 79 "parser.ypp"
-                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]); checkIfOpIsIntOrByte(yyvsp[0]);   yyval=new Bool("false");  yyval->t_label=yyvsp[-1]->f_label; yyval->f_label=yyvsp[-1]->t_label; emitRelop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval); }
-#line 1403 "parser.tab.cpp"
+               {/*cb.emit("br label %"+$1->t_label);*/ cb.emit(yyvsp[-1]->t_label+":"); }
+#line 1404 "parser.tab.cpp"
     break;
 
-  case 38: /* Exp: Exp RELOP_EQUAL Exp  */
+  case 36: /* Exp: Exp AND $@5 Exp  */
+#line 79 "parser.ypp"
+                                                                                                                                        {checkIfAndOperandsAreBool(yyvsp[-3],yyvsp[0]); string realVal= calculateOp1AndOp2(yyvsp[-3],yyvsp[0]); yyval=new Bool(realVal); yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); /* cb.emit("br label %"+$$->f_label); */ cb.emit(yyvsp[-3]->f_label+":"); cb.emit("br label %"+yyval->f_label); cb.emit(yyvsp[0]->f_label+":"); cb.emit("br label %"+yyval->f_label); cb.emit(yyvsp[0]->t_label+":"); cb.emit("br label %"+yyval->t_label); }
+#line 1410 "parser.tab.cpp"
+    break;
+
+  case 37: /* $@6: %empty  */
 #line 80 "parser.ypp"
-                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]); checkIfOpIsIntOrByte(yyvsp[0]);  yyval=new Bool("false"); yyval->t_label=yyvsp[-1]->f_label; yyval->f_label=yyvsp[-1]->t_label;  /*calculateResOfComparison($1,$2,$3);*/emitRelop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval);}
-#line 1409 "parser.tab.cpp"
+              {/*cb.emit("br label %"+$1->f_label);*/ cb.emit(yyvsp[-1]->f_label+":");}
+#line 1416 "parser.tab.cpp"
     break;
 
-  case 39: /* Exp: LPAREN Type RPAREN Exp  */
+  case 38: /* Exp: Exp OR $@6 Exp  */
+#line 80 "parser.ypp"
+                                                                                                                                       {checkIfAndOperandsAreBool(yyvsp[-3],yyvsp[0]); string realVal= calculateOp1OrOp2(yyvsp[-3],yyvsp[0]); yyval=new Bool(realVal); yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); /* cb.emit("br label %"+$$->f_label); */ cb.emit(yyvsp[-3]->t_label+":"); cb.emit("br label %"+yyval->t_label); cb.emit(yyvsp[0]->f_label+":"); cb.emit("br label %"+yyval->f_label); cb.emit(yyvsp[0]->t_label+":"); cb.emit("br label %"+yyval->t_label);}
+#line 1422 "parser.tab.cpp"
+    break;
+
+  case 39: /* Exp: Exp RELOP_GREATER Exp  */
 #line 81 "parser.ypp"
-                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]); checkIfOpIsIntOrByte(yyvsp[0]); yyval=checkIfLegalCasting(yyvsp[-2],yyvsp[0]); }
-#line 1415 "parser.tab.cpp"
+                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]); checkIfOpIsIntOrByte(yyvsp[0]);   yyval=new Bool("false");  /*$$->t_label=$3->t_label; $$->f_label=$3->f_label;*/ yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); yyval->nodereg=cb.freshVar(); emitRelop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval); }
+#line 1428 "parser.tab.cpp"
     break;
 
-  case 40: /* OPENSUBTABLE: %empty  */
-#line 84 "parser.ypp"
-                    {table->addSubTable();}
-#line 1421 "parser.tab.cpp"
+  case 40: /* Exp: Exp RELOP_EQUAL Exp  */
+#line 82 "parser.ypp"
+                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]); checkIfOpIsIntOrByte(yyvsp[0]);  yyval=new Bool("false"); /*$$->t_label=$3->t_label; $$->f_label=$3->f_label;*/ yyval->t_label=cb.freshLabel(); yyval->f_label=cb.freshLabel(); yyval->nodereg=cb.freshVar(); emitRelop(yyvsp[-2],yyvsp[0],yyvsp[-1],yyval);}
+#line 1434 "parser.tab.cpp"
     break;
 
-  case 41: /* CLOSESUBTABLE: %empty  */
+  case 41: /* Exp: LPAREN Type RPAREN Exp  */
+#line 83 "parser.ypp"
+                                                                    {checkIfOpIsIntOrByte(yyvsp[-2]); checkIfOpIsIntOrByte(yyvsp[0]); yyval=checkIfLegalCasting(yyvsp[-2],yyvsp[0]); yyval->t_label=yyvsp[0]->t_label; yyval->f_label=yyvsp[0]->f_label; yyval->nodereg=cb.freshVar(); emitConversion(yyval->nodereg,yyvsp[-2],yyvsp[0]); }
+#line 1440 "parser.tab.cpp"
+    break;
+
+  case 42: /* OPENSUBTABLE: %empty  */
 #line 86 "parser.ypp"
-                     {table->removeSubTable();}
-#line 1427 "parser.tab.cpp"
+                    {table->addSubTable();}
+#line 1446 "parser.tab.cpp"
     break;
 
-  case 42: /* CHECKIFBOOL: Exp  */
+  case 43: /* CLOSESUBTABLE: %empty  */
 #line 88 "parser.ypp"
-                      {checkIfBool(yyvsp[0]); yyval=new Bool("false");}
-#line 1433 "parser.tab.cpp"
+                     {table->removeSubTable();}
+#line 1452 "parser.tab.cpp"
+    break;
+
+  case 44: /* CHECKIFBOOL: Exp  */
+#line 90 "parser.ypp"
+                      {checkIfBool(yyvsp[0]); yyval=new Bool("false"); yyval->t_label= yyvsp[0]->t_label; yyval->f_label=yyvsp[0]->f_label; cb.emit("br label %"+yyval->t_label); cb.emit(yyval->t_label+":"); }
+#line 1458 "parser.tab.cpp"
+    break;
+
+  case 45: /* M2: %empty  */
+#line 92 "parser.ypp"
+          {yyval=new Node(""); yyval->n_label=cb.freshLabel(); cb.emit("br label %"+yyval->n_label);}
+#line 1464 "parser.tab.cpp"
+    break;
+
+  case 46: /* M3: %empty  */
+#line 94 "parser.ypp"
+          {emitPrepForIf();}
+#line 1470 "parser.tab.cpp"
     break;
 
 
-#line 1437 "parser.tab.cpp"
+#line 1474 "parser.tab.cpp"
 
       default: break;
     }
@@ -1627,7 +1664,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 90 "parser.ypp"
+#line 98 "parser.ypp"
 
 
 int main(){
@@ -1638,8 +1675,8 @@ int main(){
      int n=yyparse();
         table->removeSubTable();
         closeMain();
-        cb.printCodeBuffer();
         cb.printGlobalBuffer();
+        cb.printCodeBuffer();
         return n;
 }
 

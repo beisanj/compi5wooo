@@ -1,0 +1,7 @@
+int whichFibNumber = 1;
+    bool stop1 = false;
+    bool stop2 = false;
+bool x =(stop1 and stop2);
+
+
+
